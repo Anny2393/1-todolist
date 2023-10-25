@@ -30,13 +30,37 @@ function App() {
             title: title,
             isDone: false}
 // Создание нового массива newTasks с новой таской newTask и добавлением
-//после новой таски исходного массива тасок ...tasks
+// после новой таски исходного массива тасок ...tasks
         let newTasks = [newTask, ...tasks];
         setTasks(newTasks);
     }
 
     function changeFilter(value: FilterValuesType) {
         setFilter(value);
+    }
+
+// changeStatus - это функция, принимающая два аргумента:
+// taskId (идентификатор задачи, которую нужно изменить) и
+// isDone (новый статус задачи, true для завершенных задач
+// и false для незавершенных).
+    function changeStatus(taskId: string, isDone: boolean) {
+// выполняется поиск задачи в массиве tasks, используя метод find.
+// Этот метод проходит по всем элементам массива tasks и возвращает
+// первый элемент, для которого условие внутри функции обратного
+// вызова (в данном случае, task.id === taskId) возвращает true.
+// Таким образом, мы находим задачу с заданным taskId.
+        let task = tasks.find(task => task.id === taskId);
+// Если задача была найдена (т.е., task не является undefined),
+// то ей присваивается новое значение isDone, переданное как аргумент.
+// Это изменяет статус задачи.
+        if (task) {
+            task.isDone = isDone
+        }
+
+// Затем, после изменения статуса задачи, вызывается
+// setTasks([...tasks]). Это обновляет состояние tasks, передавая
+// в него новый массив задач.
+        setTasks([...tasks]);
     }
 
     let tasksForTodolist = tasks;
@@ -54,6 +78,7 @@ function App() {
                       removeTask={removeTask}
                       changeFilter={changeFilter}
                       addTask={addTask}
+                      changeTaskStatus={changeStatus}
             />
         </div>
     );
