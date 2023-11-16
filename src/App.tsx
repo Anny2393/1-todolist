@@ -13,80 +13,84 @@ type TodoListType = {
 
 function App() {
 
-    let [tasks, setTasks] = useState<Array<TasksPropsType>>([
-        {id: v1(), title: "CSS&HTML", isDone: true},
-        {id: v1(), title: "JS", isDone: true},
-        {id: v1(), title: "React", isDone: false},
-        {id: v1(), title: "Redux", isDone: false},
-    ]);
-    console.log(tasks);
+    // Удаление таски
+    function removeTask(id: string, todolistId: string) {
+        let tasks = tasksObj[todolistId]
 
-// Удаление таски
-    function removeTask(id: string) {
         let filteredTasks = tasks.filter(t => t.id !== id)
-        setTasks(filteredTasks);
+        tasksObj[todolistId] = filteredTasks
+        setTasksObj({...tasksObj});
     }
 
 // Добавление новой таски
-    function addTask(title: string) {
-        let newTask = {
-            id: v1(),
-            title: title,
-            isDone: false}
-// Создание нового массива newTasks с новой таской newTask и добавлением
-// после новой таски исходного массива тасок ...tasks
-        let newTasks = [newTask, ...tasks];
-        setTasks(newTasks);
+    function addTask(title: string, todolistId: string) {
+
+        let task = {id: v1(), title: title, isDone: false};
+        let tasks = tasksObj[todolistId];
+        let newTasks = [task, ...tasks];
+        tasksObj[todolistId] = newTasks
+        setTasksObj({...tasksObj});
     }
 
-// changeStatus - это функция, принимающая два аргумента:
-// taskId (идентификатор задачи, которую нужно изменить) и
-// isDone (новый статус задачи, true для завершенных задач
-// и false для незавершенных).
-    function changeStatus(taskId: string, isDone: boolean) {
-// выполняется поиск задачи в массиве tasks, используя метод find.
-// Этот метод проходит по всем элементам массива tasks и возвращает
-// первый элемент, для которого условие внутри функции обратного
-// вызова (в данном случае, task.id === taskId) возвращает true.
-// Таким образом, мы находим задачу с заданным taskId.
+    function changeStatus(taskId: string, isDone: boolean, todoListId: string) {
+        let tasks = tasksObj[todoListId];
         let task = tasks.find(task => task.id === taskId);
-// Если задача была найдена (т.е., task не является undefined),
-// то ей присваивается новое значение isDone, переданное как аргумент.
-// Это изменяет статус задачи.
         if (task) {
             task.isDone = isDone
+            setTasksObj({...tasksObj});
         }
-
-// Затем, после изменения статуса задачи, вызывается
-// setTasks([...tasks]). Это обновляет состояние tasks, передавая
-// в него новый массив задач.
-        setTasks([...tasks]);
     }
 
     function changeFilter(value: FilterValuesType, todoListId: string) {
-let todoList = todoLists.find(tl => tl.id === todoListId);
-if (todoList) {
-    todoList.filter = value;
-    setTodoLists([...todoLists]);
-}
+        let todoList = todoLists.find(tl => tl.id === todoListId);
+        if (todoList) {
+            todoList.filter = value;
+            setTodoLists([...todoLists]);
+        }
     }
 
-    let [todoLists, setTodoLists] = useState <Array<TodoListType>>([
-        {id: v1(), title: "What to learn", filter: "Active"},
-        {id: v1(), title: "What to buy", filter: "Completed"}
+    let todolistId1 = v1();
+    let todolistId2 = v1();
+
+
+    let [todoLists, setTodoLists] = useState<Array<TodoListType>>([
+        {id: todolistId1, title: "What to learn", filter: "Active"},
+        {id: todolistId2, title: "What to buy", filter: "Completed"}
     ]);
+
+    let removeTodoList = (todoListId: string) => {
+        let filteredTodoList = todoLists.filter(tl => tl.id !== todoListId)
+        setTodoLists(filteredTodoList);
+
+        delete tasksObj[todolistId1];
+        setTasksObj({...tasksObj});
+    }
+
+    let [tasksObj, setTasksObj] = useState({
+        [todolistId1]: [
+            {id: v1(), title: "CSS&HTML", isDone: true},
+            {id: v1(), title: "JS", isDone: true},
+            {id: v1(), title: "React", isDone: false},
+            {id: v1(), title: "Redux", isDone: false},
+        ],
+        [todolistId2]: [
+            {id: v1(), title: "Book", isDone: false},
+            {id: v1(), title: "Milk", isDone: true},
+
+        ]
+    })
 
     return (
         <div className="App">
             {
-                todoLists.map( (tl) => {
+                todoLists.map((tl) => {
 
-                    let tasksForTodolist = tasks;
+                    let tasksForTodolist = tasksObj[tl.id];
                     if (tl.filter === "Completed") {
-                        tasksForTodolist = tasks.filter(t => t.isDone === true);
+                        tasksForTodolist = tasksForTodolist.filter(t => t.isDone === true);
                     }
                     if (tl.filter === "Active") {
-                        tasksForTodolist = tasks.filter(t => t.isDone === false);
+                        tasksForTodolist = tasksForTodolist.filter(t => t.isDone === false);
                     }
 
                     return <Todolist
@@ -99,6 +103,7 @@ if (todoList) {
                         addTask={addTask}
                         changeTaskStatus={changeStatus}
                         filter={tl.filter}
+                        removeTodoList={removeTodoList}
                     />
                 })
             }
